@@ -1,5 +1,6 @@
 import * as React from "react";
 import { Icon, Action, ActionPanel, Detail, List } from "@raycast/api";
+import { useCachedPromise } from "@raycast/utils";
 import * as fs from "node:fs/promises";
 import { promisify } from "node:util";
 import { exec as _exec } from "node:child_process";
@@ -19,31 +20,28 @@ const dirsToWalk: string[] = [
   path.join(homedir(), "DeleteMe"),
 ];
 
-const getProjects = async () => {
-  const proms = dirsToWalk.map((dir) =>
-    fs.readdir(dir, { withFileTypes: true }).then((els) =>
-      els
-        .filter((dirent) => dirent.isDirectory())
-        .map<ProjectItem>((dirent) => ({
-          name: dirent.name,
-          parentDir: dir,
-        }))
-    )
-  );
-
-  return Promise.all(proms).then((res) => res.flat());
-};
-
 export default function ProjectLauncher() {
-  const [isLoading, setIsLoading] = React.useState(true);
-  const [items, setItems] = React.useState<ProjectItem[]>([]);
+  const { isLoading, data } = useCachedPromise(
+    async () => {
+      const proms = dirsToWalk.map((dir) =>
+        fs.readdir(dir, { withFileTypes: true }).then((els) =>
+          els
+            .filter((dirent) => dirent.isDirectory())
+            .map<ProjectItem>((dirent) => ({
+              name: dirent.name,
+              parentDir: dir,
+            }))
+        )
+      );
 
-  React.useEffect(() => {
-    getProjects().then((r) => {
-      setItems(r);
-      setIsLoading(false);
-    });
-  }, []);
+      return Promise.all(proms).then((res) => res.flat());
+    },
+    [],
+    {
+      keepPreviousData: true,
+      initialData: [],
+    }
+  );
 
   const openInWebstorm = React.useCallback((item: ProjectItem) => {
     exec(`/Users/gksander/jetbrains/ws .`, { cwd: getProjectDir(item) });
@@ -80,7 +78,7 @@ export default function ProjectLauncher() {
 
   return (
     <List isLoading={isLoading}>
-      {items.map((item) => (
+      {data.map((item) => (
         <List.Item
           title={item.name}
           subtitle={item.parentDir}
