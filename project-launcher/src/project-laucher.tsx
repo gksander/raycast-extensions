@@ -1,11 +1,10 @@
 import * as React from "react";
-import { Icon, Action, ActionPanel, Detail, List, useNavigation } from "@raycast/api";
+import { Icon, Action, ActionPanel, Detail, List } from "@raycast/api";
 import * as fs from "node:fs/promises";
 import { promisify } from "node:util";
 import { exec as _exec } from "node:child_process";
 import { homedir } from "node:os";
 import * as path from "node:path";
-import { URL } from "node:url";
 
 const exec = promisify(_exec);
 
@@ -14,7 +13,11 @@ type ProjectItem = {
   parentDir: string;
 };
 
-const dirsToWalk: string[] = [path.join(homedir(), "GitHub")];
+const dirsToWalk: string[] = [
+  path.join(homedir(), "GitHub"),
+  path.join(homedir(), "Playground"),
+  path.join(homedir(), "DeleteMe"),
+];
 
 const getProjects = async () => {
   const proms = dirsToWalk.map((dir) =>
