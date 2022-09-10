@@ -1,0 +1,31 @@
+{
+  "$schema": "https://www.raycast.com/schemas/extension.json",
+  "name": "project-launcher",
+  "title": "Project Launcher",
+  "version": "0.0.1",
+  "description": "",
+  "icon": "command-icon.png",
+  "author": "gksander",
+  "license": "MIT",
+  "commands": [
+    {
+      "name": "project-laucher",
+      "title": "Project Laucher",
+      "description": "Launch a project",
+      "mode": "view"
+    }
+  ],
+  "dependencies": {
+    "@raycast/api": "^1.39.3"
+  },
+  "devDependencies": {
+    "typescript": "^4.4.3"
+  },
+  "scripts": {
+    "build": "ray build -e dist",
+    "dev": "ray develop",
+    "fix-lint": "ray lint --fix",
+    "lint": "ray lint",
+    "publish": "ray publish"
+  }
+}
