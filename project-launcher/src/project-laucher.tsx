@@ -43,6 +43,52 @@ export default function ProjectLauncher() {
     }
   );
 
+  return (
+    <List isLoading={isLoading}>
+      {data.map((item) => (
+        <List.Item
+          title={item.name}
+          subtitle={item.parentDir}
+          key={`${item.parentDir}/${item.name}`}
+          actions={<ProjectActions item={item} />}
+        />
+      ))}
+    </List>
+  );
+}
+
+const getProjectDir = (item: ProjectItem) => path.join(item.parentDir, item.name);
+
+function ProjectActions({ item }: { item: ProjectItem }) {
+  const [repoUrl, setRepoUrl] = React.useState(null as null | string);
+
+  React.useEffect(() => {
+    (async () => {
+      try {
+        const repoUrl = (await exec(`git config --get remote.origin.url`, { cwd: getProjectDir(item) })).stdout.replace(
+          /\n/g,
+          ""
+        );
+
+        let remoteHttpsUrl = "";
+        if (repoUrl.startsWith("https")) {
+          remoteHttpsUrl = repoUrl.replace(/\.git$/g, "");
+        } else {
+          const r = /^git@(.*):(.*)\/(.*)\.git$/;
+          const match = repoUrl.match(r);
+          if (match) {
+            const [_, base, org, repo] = match;
+            remoteHttpsUrl = `https://${base}/${org}/${repo}`;
+          }
+        }
+
+        setRepoUrl(remoteHttpsUrl);
+      } catch {
+        setRepoUrl("");
+      }
+    })();
+  }, []);
+
   const openInWebstorm = React.useCallback((item: ProjectItem) => {
     exec(`/Users/gksander/jetbrains/ws .`, { cwd: getProjectDir(item) });
   }, []);
@@ -55,68 +101,37 @@ export default function ProjectLauncher() {
   const openInIterm = React.useCallback((item: ProjectItem) => {
     exec(`open -a iTerm .`, { cwd: getProjectDir(item) });
   }, []);
-  const openInGitHubSite = React.useCallback(async (item: ProjectItem, action: string) => {
-    const repoUrl = (await exec(`git config --get remote.origin.url`, { cwd: getProjectDir(item) })).stdout.replace(
-      /\n/g,
-      ""
-    );
-
-    let remoteHttpsUrl = "";
-    if (repoUrl.startsWith("https")) {
-      remoteHttpsUrl = repoUrl.replace(/\.git$/g, "");
-    } else {
-      const r = /^git@(.*):(.*)\/(.*)\.git$/;
-      const match = repoUrl.match(r);
-      if (match) {
-        const [_, base, org, repo] = match;
-        remoteHttpsUrl = `https://${base}/${org}/${repo}`;
-      }
-    }
-
-    exec(`open ${remoteHttpsUrl}${action}`);
-  }, []);
+  const openInGitHubSite = React.useCallback(
+    (item: ProjectItem, action: string) => {
+      exec(`open ${repoUrl}${action}`);
+    },
+    [repoUrl]
+  );
 
   return (
-    <List isLoading={isLoading}>
-      {data.map((item) => (
-        <List.Item
-          title={item.name}
-          subtitle={item.parentDir}
-          key={`${item.parentDir}/${item.name}`}
-          actions={
-            <ActionPanel title={item.name}>
-              <Action
-                title="Open in WebStorm"
-                onAction={() => openInWebstorm(item)}
-                icon={{ source: "webstorm.png" }}
-              />
-              <Action
-                title="Open in GitHub"
-                onAction={() => openInGitHubDesktop(item)}
-                icon={{ source: "github.svg" }}
-              />
-              <Action title="Open in VSCode" onAction={() => openInVSC(item)} icon={{ source: "vscode.png" }} />
-              <Action title="Open in iTerm" onAction={() => openInIterm(item)} icon={Icon.Terminal} />
+    <ActionPanel title={item.name}>
+      <ActionPanel.Section title="Local tools">
+        <Action title="Open in WebStorm" onAction={() => openInWebstorm(item)} icon={{ source: "webstorm.png" }} />
+        <Action title="Open in GitHub" onAction={() => openInGitHubDesktop(item)} icon={{ source: "github.svg" }} />
+        <Action title="Open in VSCode" onAction={() => openInVSC(item)} icon={{ source: "vscode.png" }} />
+        <Action title="Open in iTerm" onAction={() => openInIterm(item)} icon={Icon.Terminal} />
+      </ActionPanel.Section>
 
-              <Action title="Repo Site" onAction={() => openInGitHubSite(item, "/")} />
-              <Action title="Issues" onAction={() => openInGitHubSite(item, "/issues")} />
-              <Action title="Pull Requests" onAction={() => openInGitHubSite(item, "/pulls")} />
-              <Action title="GH Actions" onAction={() => openInGitHubSite(item, "/actions")} />
-              <Action title="Compare Branches" onAction={() => openInGitHubSite(item, "/compare")} />
+      {repoUrl && (
+        <ActionPanel.Section title="github.com">
+          <Action title="Repo Site" onAction={() => openInGitHubSite(item, "/")} />
+          <Action title="Issues" onAction={() => openInGitHubSite(item, "/issues")} />
+          <Action title="Pull Requests" onAction={() => openInGitHubSite(item, "/pulls")} />
+          <Action title="GH Actions" onAction={() => openInGitHubSite(item, "/actions")} />
+          <Action title="Compare Branches" onAction={() => openInGitHubSite(item, "/compare")} />
+        </ActionPanel.Section>
+      )}
 
-              <Action.ShowInFinder title="Show in Finder" path={getProjectDir(item)} />
-              <Action.CopyToClipboard title="Copy path to Clipboard" content={getProjectDir(item)} />
-              <Action.OpenWith path={path.join(item.parentDir, item.name)} />
-            </ActionPanel>
-          }
-        />
-      ))}
-    </List>
+      <ActionPanel.Section title="Mac actions">
+        <Action.ShowInFinder title="Show in Finder" path={getProjectDir(item)} />
+        <Action.CopyToClipboard title="Copy path to Clipboard" content={getProjectDir(item)} />
+        <Action.OpenWith path={path.join(item.parentDir, item.name)} />
+      </ActionPanel.Section>
+    </ActionPanel>
   );
-}
-
-const getProjectDir = (item: ProjectItem) => path.join(item.parentDir, item.name);
-
-function ActOnProject() {
-  return <Detail markdown="**Hello** _World_!" />;
 }
