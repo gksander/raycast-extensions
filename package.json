@@ -2,7 +2,7 @@
   "name": "raycast-extensions",
   "private": true,
   "workspaces": {
-    "packages": ["./project-launcher"]
+    "packages": ["./project-launcher", "./csv-to-json"]
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^5.0.0",

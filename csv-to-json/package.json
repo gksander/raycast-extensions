@@ -1,0 +1,34 @@
+{
+  "$schema": "https://www.raycast.com/schemas/extension.json",
+  "name": "csv-to-json",
+  "title": "CSV to JSON",
+  "version": "0.0.1",
+  "description": "",
+  "icon": "command-icon.png",
+  "author": "gksander",
+  "license": "MIT",
+  "commands": [
+    {
+      "name": "csv-to-json",
+      "title": "CSV to JSON",
+      "description": "Convert CSV to JSON",
+      "mode": "view"
+    }
+  ],
+  "dependencies": {
+    "@raycast/api": "^1.58.0",
+    "@raycast/utils": "^1.9.1",
+    "csv-parser": "^3.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.6.0",
+    "typescript": "^4.4.3"
+  },
+  "scripts": {
+    "build": "ray build -e dist",
+    "dev": "ray develop",
+    "fix-lint": "ray lint --fix",
+    "lint": "ray lint",
+    "publish": "ray publish"
+  }
+}
