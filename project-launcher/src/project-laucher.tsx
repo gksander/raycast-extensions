@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Icon, Action, ActionPanel, Detail, List } from "@raycast/api";
+import { Icon, Action, ActionPanel, List } from "@raycast/api";
 import { useCachedPromise } from "@raycast/utils";
 import * as fs from "node:fs/promises";
 import { promisify } from "node:util";
@@ -102,7 +102,7 @@ function ProjectActions({ item }: { item: ProjectItem }) {
     exec(`open -a iTerm .`, { cwd: getProjectDir(item) });
   }, []);
   const openInGitHubSite = React.useCallback(
-    (item: ProjectItem, action: string) => {
+    (_item: ProjectItem, action: string) => {
       exec(`open ${repoUrl}${action}`);
     },
     [repoUrl]

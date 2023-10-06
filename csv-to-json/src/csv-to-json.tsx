@@ -61,7 +61,6 @@ export default function CsvToJson() {
         id="file"
         title="CSV File"
         allowMultipleSelection={false}
-        storeValue={true}
         onChange={([file]) => handleFile(file)}
         ref={tagRef}
       />
